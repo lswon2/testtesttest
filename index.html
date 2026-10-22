@@ -1,0 +1,506 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1020">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>매일 운동 체크</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e1020; --card:#171a30; --line:#272c4d; --text:#f4f5ff; --sub:#9aa0c7;
+  --swim:#29c5ff; --run:#ff6b3d; --push:#b8f72f; --hang:#b58cff;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{
+  background:
+    radial-gradient(600px 300px at 100% -5%, #ff6b3d22, transparent 70%),
+    radial-gradient(500px 300px at -10% 30%, #29c5ff18, transparent 70%),
+    var(--bg);
+  color:var(--text);
+  font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  min-height:100vh;
+}
+button{font-family:inherit;cursor:pointer}
+.app{max-width:480px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom))}
+
+/* 상단 히어로 */
+.hero{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#ff6b3d 0%,#ff2e7e 55%,#8f5bff 100%);
+  border-radius:26px;padding:20px 20px 18px;
+  box-shadow:0 12px 30px #ff2e7e33;
+}
+.hero::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:#ffffff1f}
+.hero small{font-size:13px;font-weight:500;opacity:.9}
+.hero h1{margin:4px 0 14px;font-size:24px;font-weight:900;letter-spacing:-.5px}
+.hero .row{display:flex;gap:10px;position:relative;z-index:1}
+.pill{flex:1;background:#00000026;border-radius:16px;padding:10px 12px}
+.pill b{display:block;font-size:22px;font-weight:900}
+.pill span{font-size:12px;opacity:.9}
+
+/* 월 이동 */
+.monthnav{display:flex;align-items:center;justify-content:space-between;margin:20px 0 10px}
+.monthnav h2{margin:0;font-size:20px;font-weight:900}
+.monthnav button{width:44px;height:44px;border-radius:14px;background:var(--card);border:1px solid var(--line);color:var(--text);font-size:18px}
+.monthnav button:disabled{opacity:.3}
+
+/* 날짜 띠 */
+.strip{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:none;scroll-behavior:smooth}
+.strip::-webkit-scrollbar{display:none}
+.day{
+  flex:0 0 50px;height:76px;border-radius:17px;background:var(--card);border:1.5px solid var(--line);
+  color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0;
+  transition:transform .15s;
+}
+.day:active{transform:scale(.94)}
+.day .wd{font-size:11px;color:var(--sub)}
+.day .dn{font-size:18px;font-weight:900}
+.day.today{border-color:var(--run)}
+.day.sel{background:var(--text);border-color:var(--text);color:#12142a}
+.day.sel .wd{color:#555a80}
+.day:disabled{opacity:.28}
+.dots{display:flex;gap:2.5px}
+.dots i{width:5px;height:5px;border-radius:50%;background:#ffffff1f}
+.day.sel .dots i{background:#00000018}
+.dots i.s{background:var(--swim)!important}.dots i.r{background:var(--run)!important}
+.dots i.p{background:var(--push)!important}.dots i.h{background:var(--hang)!important}
+
+/* 카드 */
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:18px 16px;margin-top:14px}
+.card-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.card-head h3{margin:0;font-size:17px;font-weight:900}
+.card-head span{font-size:12.5px;color:var(--sub)}
+.badge{display:inline-block;font-size:11px;font-weight:700;background:var(--run);color:#fff;border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:2px}
+.progress{height:8px;border-radius:99px;background:#ffffff12;margin:12px 0 4px;overflow:hidden}
+.progress div{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--swim),var(--push));transition:width .35s}
+
+/* 기록 항목 */
+.item{
+  display:flex;align-items:center;gap:12px;width:100%;padding:12px;margin-top:10px;
+  border-radius:18px;background:#ffffff08;border:0;color:inherit;text-align:left;font:inherit;
+  transition:box-shadow .2s, background .2s, transform .12s;
+}
+button.item:active{transform:scale(.98)}
+.ic{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;font-size:25px;flex:none}
+.info{flex:1;min-width:0}
+.info b{display:block;font-size:16px;font-weight:700}
+.info small{color:var(--sub);font-size:12.5px}
+.check{
+  width:36px;height:36px;border-radius:50%;border:2px solid #3a4070;flex:none;
+  display:grid;place-items:center;transition:all .2s;
+}
+.check svg{width:20px;height:20px;opacity:0;transform:scale(.4);transition:all .2s}
+.toggle.on{box-shadow:inset 0 0 0 1.5px var(--c);background:#ffffff0d}
+.toggle.on .check{background:var(--c);border-color:var(--c)}
+.toggle.on .check svg{opacity:1;transform:scale(1)}
+.pop{animation:pop .35s}
+@keyframes pop{40%{transform:scale(1.25)}}
+.stepper{display:flex;align-items:center;gap:6px;flex:none}
+.stepper button{width:42px;height:42px;border-radius:13px;border:0;background:#ffffff14;color:var(--text);font-size:22px;font-weight:700;line-height:1}
+.stepper button:active{background:#ffffff2a}
+.stepper input{
+  width:66px;height:42px;border-radius:13px;border:1.5px solid var(--line);background:#0b0d1a;color:var(--text);
+  text-align:center;font-size:18px;font-weight:900;font-family:inherit;-moz-appearance:textfield;appearance:textfield;
+}
+.stepper input:focus{outline:none;border-color:var(--c)}
+.stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.clear{display:block;margin:14px auto 0;background:none;border:0;color:var(--sub);font-size:13px;text-decoration:underline;padding:6px}
+
+/* 통계 */
+.section-title{margin:26px 4px 0;font-size:17px;font-weight:900}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px}
+.stat .lbl{font-size:12.5px;color:var(--sub)}
+.stat .v{font-size:27px;font-weight:900;margin-top:2px;letter-spacing:-.5px}
+.stat .v small{font-size:13px;font-weight:700;color:var(--sub);margin-left:2px}
+
+/* 그래프 */
+.chart svg{width:100%;height:auto;display:block;margin-top:10px}
+.chart .tip{font-size:12px;color:var(--sub);margin-top:6px;text-align:center}
+.rings{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.ringcard{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:14px 12px}
+.ringcard h4{margin:0 0 6px;font-size:14px;font-weight:700;text-align:center}
+.ring{position:relative;width:100px;height:100px;margin:0 auto}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{transition:stroke-dashoffset .6s ease}
+.ring .mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .mid b{font-size:26px;font-weight:900;line-height:1}
+.ring .mid span{font-size:11.5px;color:var(--sub);margin-top:3px}
+.mini{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:12px}
+.mini i{aspect-ratio:1;border-radius:4px;background:#ffffff10}
+.mini i.blank{background:none}
+.mini i.fut{background:#ffffff05}
+.mini i.today{box-shadow:inset 0 0 0 1.5px #ffffffaa}
+
+.toast{
+  position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,20px);
+  background:#ffffff;color:#12142a;font-weight:700;font-size:14px;padding:10px 18px;border-radius:99px;
+  opacity:0;pointer-events:none;transition:all .25s;box-shadow:0 8px 24px #0006;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+footer{text-align:center;color:#5d628c;font-size:11.5px;margin-top:26px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <section class="hero">
+    <small id="heroDate"></small>
+    <h1>오늘도 움직여 볼까요? 🔥</h1>
+    <div class="row">
+      <div class="pill"><b id="streak">0일</b><span>연속 운동</span></div>
+      <div class="pill"><b id="todayDone">0/4</b><span>오늘 완료</span></div>
+    </div>
+  </section>
+
+  <div class="monthnav">
+    <button id="prevM" aria-label="이전 달">◀</button>
+    <h2 id="monthLabel"></h2>
+    <button id="nextM" aria-label="다음 달">▶</button>
+  </div>
+
+  <div class="strip" id="strip"></div>
+
+  <!-- 기록 카드 -->
+  <section class="card">
+    <div class="card-head">
+      <h3 id="recTitle"></h3>
+      <span id="recCount"></span>
+    </div>
+    <div class="progress"><div id="recBar"></div></div>
+
+    <button class="item toggle" id="swimBtn" style="--c:var(--swim)">
+      <div class="ic" style="background:#29c5ff22">🏊</div>
+      <div class="info"><b>수영</b><small>수영했으면 눌러주세요</small></div>
+      <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="#0e1020" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+    </button>
+
+    <div class="item" style="--c:var(--run)">
+      <div class="ic" style="background:#ff6b3d22">🏃</div>
+      <div class="info"><b>달리기</b><small>km</small></div>
+      <div class="stepper">
+        <button data-step="run" data-v="-1" aria-label="달리기 줄이기">−</button>
+        <input id="runIn" type="number" inputmode="decimal" step="0.1" min="0" placeholder="0">
+        <button data-step="run" data-v="1" aria-label="달리기 늘리기">+</button>
+      </div>
+    </div>
+
+    <div class="item" style="--c:var(--push)">
+      <div class="ic" style="background:#b8f72f1f">💪</div>
+      <div class="info"><b>푸시업</b><small>개</small></div>
+      <div class="stepper">
+        <button data-step="push" data-v="-10" aria-label="푸시업 줄이기">−</button>
+        <input id="pushIn" type="number" inputmode="numeric" step="1" min="0" placeholder="0">
+        <button data-step="push" data-v="10" aria-label="푸시업 늘리기">+</button>
+      </div>
+    </div>
+
+    <button class="item toggle" id="hangBtn" style="--c:var(--hang)">
+      <div class="ic" style="background:#b58cff22">🧗</div>
+      <div class="info"><b>매달리기</b><small>매달리기 했으면 눌러주세요</small></div>
+      <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="#0e1020" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+    </button>
+
+    <button class="clear" id="clearBtn">이 날 기록 지우기</button>
+  </section>
+
+  <h3 class="section-title" id="statTitle"></h3>
+  <div class="stats">
+    <div class="stat"><div class="lbl">🏃 달리기 합계</div><div class="v" style="color:var(--run)" id="sRun">0<small>km</small></div></div>
+    <div class="stat"><div class="lbl">💪 푸시업 합계</div><div class="v" style="color:var(--push)" id="sPush">0<small>개</small></div></div>
+    <div class="stat"><div class="lbl">🏊 수영</div><div class="v" style="color:var(--swim)" id="sSwim">0<small>일</small></div></div>
+    <div class="stat"><div class="lbl">🧗 매달리기</div><div class="v" style="color:var(--hang)" id="sHang">0<small>일</small></div></div>
+  </div>
+
+  <section class="card chart">
+    <div class="card-head"><h3>🏃 달리기 (km)</h3><span id="runInfo"></span></div>
+    <div id="runChart"></div>
+    <div class="tip">막대를 누르면 그 날짜로 이동해요</div>
+  </section>
+
+  <section class="card chart">
+    <div class="card-head"><h3>💪 푸시업 (개)</h3><span id="pushInfo"></span></div>
+    <div id="pushChart"></div>
+    <div class="tip">막대를 누르면 그 날짜로 이동해요</div>
+  </section>
+
+  <div class="rings">
+    <div class="ringcard" id="swimRing"></div>
+    <div class="ringcard" id="hangRing"></div>
+  </div>
+
+  <footer>기록은 이 기기의 브라우저에 자동 저장돼요</footer>
+</div>
+
+<div class="toast" id="toast">저장됨 ✓</div>
+
+<script>
+const KEY = 'dailyWorkoutLog.v1';
+const WD = ['일','월','화','수','목','금','토'];
+const COLORS = {swim:'#29c5ff', run:'#ff6b3d', push:'#b8f72f', hang:'#b58cff'};
+const $ = id => document.getElementById(id);
+
+function load(){
+  try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){ return {}; }
+}
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(data)); showToast('저장됨 ✓'); }
+  catch(e){ showToast('저장 실패 😢'); }
+}
+
+let data = load();
+const today = new Date(); today.setHours(0,0,0,0);
+let viewY = today.getFullYear(), viewM = today.getMonth(), selDay = today.getDate();
+
+const pad = n => String(n).padStart(2,'0');
+const keyOf = (y,m,d) => `${y}-${pad(m+1)}-${pad(d)}`;
+const daysIn = (y,m) => new Date(y, m+1, 0).getDate();
+const EMPTY = {swim:false, run:0, push:0, hang:false};
+const rec = (y,m,d) => Object.assign({}, EMPTY, data[keyOf(y,m,d)] || {});
+const isFuture = (y,m,d) => new Date(y,m,d) > today;
+const isToday = (y,m,d) => y===today.getFullYear() && m===today.getMonth() && d===today.getDate();
+const hasAny = r => r.swim || r.hang || r.run > 0 || r.push > 0;
+const doneCount = r => (r.swim?1:0) + (r.run>0?1:0) + (r.push>0?1:0) + (r.hang?1:0);
+const fmtKm = v => String(Math.round(v*10)/10);
+
+function setRec(patch){
+  const k = keyOf(viewY, viewM, selDay);
+  const r = Object.assign(rec(viewY, viewM, selDay), patch);
+  if (!hasAny(r)) delete data[k]; else data[k] = r;
+  save();
+}
+
+let toastTimer;
+function showToast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1100);
+}
+
+/* ---------- 상단 ---------- */
+function renderHero(){
+  $('heroDate').textContent = `${today.getMonth()+1}월 ${today.getDate()}일 ${WD[today.getDay()]}요일`;
+  // 연속 운동일: 오늘 기록이 없으면 어제부터 셈
+  let d = new Date(today), streak = 0;
+  if (!hasAny(rec(d.getFullYear(), d.getMonth(), d.getDate()))) d.setDate(d.getDate()-1);
+  while (hasAny(rec(d.getFullYear(), d.getMonth(), d.getDate()))) { streak++; d.setDate(d.getDate()-1); }
+  $('streak').textContent = streak + '일';
+  $('todayDone').textContent = doneCount(rec(today.getFullYear(), today.getMonth(), today.getDate())) + '/4';
+}
+
+function renderMonth(){
+  $('monthLabel').textContent = `${viewY}년 ${viewM+1}월`;
+  $('nextM').disabled = (viewY === today.getFullYear() && viewM === today.getMonth());
+  $('statTitle').textContent = `📊 ${viewM+1}월 기록`;
+}
+
+/* ---------- 날짜 띠 ---------- */
+function renderStrip(scroll){
+  const n = daysIn(viewY, viewM);
+  let html = '';
+  for (let d = 1; d <= n; d++){
+    const r = rec(viewY, viewM, d);
+    const wd = new Date(viewY, viewM, d).getDay();
+    const cls = ['day'];
+    if (d === selDay) cls.push('sel');
+    if (isToday(viewY, viewM, d)) cls.push('today');
+    html += `<button class="${cls.join(' ')}" data-d="${d}" ${isFuture(viewY,viewM,d)?'disabled':''}>
+      <span class="wd" style="${wd===0?'color:#ff6b6b':''}">${WD[wd]}</span><span class="dn">${d}</span>
+      <span class="dots"><i class="${r.swim?'s':''}"></i><i class="${r.run>0?'r':''}"></i><i class="${r.push>0?'p':''}"></i><i class="${r.hang?'h':''}"></i></span>
+    </button>`;
+  }
+  const strip = $('strip');
+  strip.innerHTML = html;
+  if (scroll){
+    const el = strip.querySelector('.sel');
+    if (el) strip.scrollLeft = el.offsetLeft - strip.clientWidth/2 + el.offsetWidth/2;
+  }
+}
+
+/* ---------- 기록 카드 ---------- */
+function renderRecord(){
+  const r = rec(viewY, viewM, selDay);
+  const wd = WD[new Date(viewY, viewM, selDay).getDay()];
+  $('recTitle').innerHTML = `${viewM+1}월 ${selDay}일 (${wd})` + (isToday(viewY,viewM,selDay) ? '<span class="badge">오늘</span>' : '');
+  $('swimBtn').classList.toggle('on', r.swim);
+  $('hangBtn').classList.toggle('on', r.hang);
+  if (document.activeElement !== $('runIn')) $('runIn').value = r.run ? fmtKm(r.run) : '';
+  if (document.activeElement !== $('pushIn')) $('pushIn').value = r.push ? r.push : '';
+  renderProgress();
+}
+function renderProgress(){
+  const c = doneCount(rec(viewY, viewM, selDay));
+  $('recCount').textContent = c === 4 ? '완벽해요! 🎉' : `${c}/4 완료`;
+  $('recBar').style.width = (c/4*100) + '%';
+}
+
+/* ---------- 통계 & 그래프 ---------- */
+function monthValues(){
+  const n = daysIn(viewY, viewM), out = [];
+  for (let d = 1; d <= n; d++) out.push(rec(viewY, viewM, d));
+  return out;
+}
+
+function niceMax(v, fallback){
+  if (v <= 0) return fallback;
+  const p = Math.pow(10, Math.floor(Math.log10(v)));
+  const n = v / p;
+  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p;
+}
+
+function barChart(values, color, id, fallbackMax, fmt){
+  const W = 340, H = 180, L = 32, R = 6, T = 22, B = 22;
+  const cw = W - L - R, ch = H - T - B, n = values.length;
+  const max = niceMax(Math.max(...values), fallbackMax);
+  const slot = cw / n, bw = Math.max(3, slot * 0.62);
+  let s = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${color}"/><stop offset="1" stop-color="${color}" stop-opacity=".45"/>
+    </linearGradient></defs>`;
+  [0, .5, 1].forEach(f => {
+    const y = T + ch - ch*f;
+    s += `<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#ffffff14" stroke-dasharray="${f?'3 4':''}"/>
+          <text x="${L-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#7d83ad">${fmt(max*f)}</text>`;
+  });
+  values.forEach((v, i) => {
+    const d = i + 1, x = L + slot*i;
+    if (d === selDay) s += `<rect x="${x}" y="${T-14}" width="${slot}" height="${ch+14}" rx="4" fill="#ffffff10"/>`;
+    const h = v / max * ch, bx = x + (slot - bw)/2;
+    if (v > 0) s += `<rect x="${bx}" y="${T+ch-h}" width="${bw}" height="${h}" rx="${Math.min(3,bw/2)}" fill="url(#${id})"/>`;
+    else s += `<rect x="${bx}" y="${T+ch-2}" width="${bw}" height="2" rx="1" fill="#ffffff1a"/>`;
+    if (d === selDay && v > 0) s += `<text x="${x+slot/2}" y="${T+ch-h-5}" text-anchor="middle" font-size="10.5" font-weight="900" fill="${color}">${fmt(v)}</text>`;
+    const showLabel = d === 1 || d % 5 === 0 || d === selDay || (d === n && n % 5 >= 3);
+    if (showLabel && !(d === selDay - 1 || d === selDay + 1) || d === selDay) {
+        s += `<text x="${x+slot/2}" y="${H-6}" text-anchor="middle" font-size="10" fill="${d===selDay?'#fff':'#7d83ad'}" font-weight="${d===selDay?900:400}">${d}</text>`;
+    }
+    if (!isFuture(viewY, viewM, d)) s += `<rect class="hit" data-d="${d}" x="${x}" y="0" width="${slot}" height="${H}" fill="transparent" style="cursor:pointer"/>`;
+  });
+  return s + '</svg>';
+}
+
+function ringCard(title, emoji, count, n, color, key){
+  const r = 42, C = 2 * Math.PI * r, p = n ? count / n : 0;
+  const first = new Date(viewY, viewM, 1).getDay();
+  let cal = '';
+  for (let i = 0; i < first; i++) cal += '<i class="blank"></i>';
+  for (let d = 1; d <= n; d++){
+    const done = rec(viewY, viewM, d)[key];
+    const cls = [];
+    if (isFuture(viewY, viewM, d)) cls.push('fut');
+    if (isToday(viewY, viewM, d)) cls.push('today');
+    cal += `<i class="${cls.join(' ')}" style="${done ? 'background:'+color : ''}"></i>`;
+  }
+  return `<h4>${emoji} ${title}</h4>
+    <div class="ring">
+      <svg viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="${r}" fill="none" stroke="#ffffff12" stroke-width="10"/>
+        <circle cx="50" cy="50" r="${r}" fill="none" stroke="${color}" stroke-width="10" stroke-linecap="round"
+          stroke-dasharray="${C}" stroke-dashoffset="${C*(1-p)}"/>
+      </svg>
+      <div class="mid"><b style="color:${color}">${count}</b><span>/ ${n}일</span></div>
+    </div>
+    <div class="mini">${cal}</div>`;
+}
+
+function renderStats(){
+  const vals = monthValues(), n = vals.length;
+  const runs = vals.map(r => r.run), pushes = vals.map(r => r.push);
+  const runSum = runs.reduce((a,b) => a+b, 0), pushSum = pushes.reduce((a,b) => a+b, 0);
+  const swimDays = vals.filter(r => r.swim).length, hangDays = vals.filter(r => r.hang).length;
+
+  $('sRun').innerHTML = `${fmtKm(runSum)}<small>km</small>`;
+  $('sPush').innerHTML = `${pushSum.toLocaleString()}<small>개</small>`;
+  $('sSwim').innerHTML = `${swimDays}<small>일</small>`;
+  $('sHang').innerHTML = `${hangDays}<small>일</small>`;
+
+  $('runInfo').textContent = `최고 ${fmtKm(Math.max(...runs))}km`;
+  $('pushInfo').textContent = `최고 ${Math.max(...pushes)}개`;
+  $('runChart').innerHTML = barChart(runs, COLORS.run, 'gRun', 5, v => fmtKm(v));
+  $('pushChart').innerHTML = barChart(pushes, COLORS.push, 'gPush', 20, v => String(Math.round(v)));
+
+  $('swimRing').innerHTML = ringCard('수영', '🏊', swimDays, n, COLORS.swim, 'swim');
+  $('hangRing').innerHTML = ringCard('매달리기', '🧗', hangDays, n, COLORS.hang, 'hang');
+}
+
+/* 기록이 바뀌었을 때 (입력칸은 다시 그리지 않음) */
+function refreshAfterChange(){
+  renderHero(); renderStrip(false); renderProgress(); renderStats();
+}
+function renderAll(scroll){
+  renderHero(); renderMonth(); renderStrip(scroll); renderRecord(); renderStats();
+}
+
+function selectDay(d){
+  selDay = d;
+  renderStrip(true); renderRecord(); renderStats();
+}
+
+/* ---------- 이벤트 ---------- */
+$('strip').addEventListener('click', e => {
+  const b = e.target.closest('.day'); if (b && !b.disabled) selectDay(+b.dataset.d);
+});
+[$('runChart'), $('pushChart')].forEach(el => el.addEventListener('click', e => {
+  const h = e.target.closest('.hit'); if (h) selectDay(+h.dataset.d);
+}));
+
+$('prevM').addEventListener('click', () => {
+  viewM--; if (viewM < 0) { viewM = 11; viewY--; }
+  selDay = 1; renderAll(true);
+});
+$('nextM').addEventListener('click', () => {
+  viewM++; if (viewM > 11) { viewM = 0; viewY++; }
+  selDay = isToday(viewY, viewM, today.getDate()) ? today.getDate() : 1;
+  renderAll(true);
+});
+
+function toggle(key, btn){
+  const r = rec(viewY, viewM, selDay);
+  setRec({[key]: !r[key]});
+  btn.classList.toggle('on', !r[key]);
+  const c = btn.querySelector('.check'); c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop');
+  if (!r[key] && navigator.vibrate) navigator.vibrate(15);
+  refreshAfterChange();
+}
+$('swimBtn').addEventListener('click', e => toggle('swim', e.currentTarget));
+$('hangBtn').addEventListener('click', e => toggle('hang', e.currentTarget));
+
+document.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => {
+  const key = b.dataset.step, step = parseFloat(b.dataset.v);
+  const r = rec(viewY, viewM, selDay);
+  let v = Math.max(0, r[key] + step);
+  v = key === 'run' ? Math.round(v*10)/10 : Math.round(v);
+  setRec({[key]: v});
+  renderRecord(); refreshAfterChange();
+}));
+
+$('runIn').addEventListener('input', e => {
+  let v = parseFloat(e.target.value); if (isNaN(v) || v < 0) v = 0;
+  setRec({run: Math.min(500, Math.round(v*10)/10)}); refreshAfterChange();
+});
+$('pushIn').addEventListener('input', e => {
+  let v = parseInt(e.target.value, 10); if (isNaN(v) || v < 0) v = 0;
+  setRec({push: Math.min(10000, v)}); refreshAfterChange();
+});
+['runIn','pushIn'].forEach(id => {
+  $(id).addEventListener('blur', () => setTimeout(renderRecord, 0));
+  $(id).addEventListener('keydown', e => { if (e.key === 'Enter') e.target.blur(); });
+});
+
+$('clearBtn').addEventListener('click', () => {
+  if (!hasAny(rec(viewY, viewM, selDay))) { showToast('지울 기록이 없어요'); return; }
+  if (confirm(`${viewM+1}월 ${selDay}일 기록을 지울까요?`)) {
+    delete data[keyOf(viewY, viewM, selDay)]; save(); showToast('기록을 지웠어요');
+    renderAll(false);
+  }
+});
+
+renderAll(true);
+</script>
+</body>
+</html>
+
+</body></html>
